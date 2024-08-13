@@ -1,0 +1,47 @@
+import os
+from docx import Document
+from docx.shared import Pt
+import subprocess
+
+def add_script_to_document(doc, script_path):
+    # Add a section for each script
+    script_name = os.path.basename(script_path)
+    doc.add_heading(f'Documentation for {script_name}', level=2)
+
+    # Add the code to the document
+    doc.add_heading('Code', level=3)
+    with open(script_path, 'r') as file:
+        code = file.read()
+    code_paragraph = doc.add_paragraph()
+    code_paragraph.add_run(code).font.size = Pt(10)
+
+    # Run the script and capture the output
+    result = subprocess.run(['python', script_path], capture_output=True, text=True)
+
+    # Add a section for the results
+    doc.add_heading('Results', level=3)
+    doc.add_paragraph(result.stdout)
+
+def compile_documentation(folder_path, doc_name):
+    # Create a new Word document
+    doc = Document()
+    doc.add_heading('Python Scripts Documentation', level=1)
+
+    # Process each .py file in the folder
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.py'):
+            script_path = os.path.join(folder_path, filename)
+            add_script_to_document(doc, script_path)
+
+    # Save the compiled document
+    doc.save(doc_name)
+    print(f"Documentation compiled into {doc_name}")
+
+if __name__ == "__main__":
+    # Path to the folder containing your Python scripts
+    scripts_folder_path = r'C:\Users\Apple\python'
+
+    # Path where the Word document should be saved
+    output_doc_path = r'C:\Users\Apple\python\All_Scripts_Documentation.docx'
+
+    compile_documentation(scripts_folder_path, output_doc_path)
